@@ -10,7 +10,7 @@
 	[Non-relational]
 	1. Shape of certain colored object
 	2. Horizontal location of certain colored object : whether it is on the left side of the image or right side of the image
-	3. Vertical location of certain colored object : whether it is on the upside of the image or downside of the image  
+	3. Vertical location of certain colored object : whether it is on the upside of the image or downside of the image
 	  
 	[relational]
 	1. Shape of the object which is closest to the certain colored object
