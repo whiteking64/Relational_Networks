@@ -7,12 +7,12 @@
 + Composed of 10000 images and 20 questions (10 relational and 10 non-relational questions) per each image
 + One image contains 6 randomely chosen shapes (square or circle) with different colors (red, green, blue, orange, gray, yellow)
 + Non-relational and relational questions fall into 3 subtypes respectively:  
-	[Non-relational]  
+	[Non-relational]
 	1. Shape of certain colored object
 	2. Horizontal location of certain colored object : whether it is on the left side of the image or right side of the image
 	3. Vertical location of certain colored object : whether it is on the upside of the image or downside of the image  
 	  
-	[relational]  
+	[relational]
 	1. Shape of the object which is closest to the certain colored object
 	2. Shape of the object which is furthest to the certain colored object
 	3. Number of objects which have the same shape with the certain colored object
