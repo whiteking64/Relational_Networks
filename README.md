@@ -13,9 +13,9 @@
 	3. Vertical location of certain colored object : whether it is on the upside of the image or downside of the image
 	  
 	[relational]
-	1. Shape of the object which is closest to the certain colored object
-	2. Shape of the object which is furthest to the certain colored object
-	3. Number of objects which have the same shape with the certain colored object
+	1. Shape of the object that is closest to the certain colored object
+	2. Shape of the object that is furthest to the certain colored object
+	3. Number of objects that have the same shape as the certain colored object
 
 
 ## Requirements
@@ -26,13 +26,13 @@
 
 
 ## File details
-There are 2 types of implementation: ```clevr_model``` and ```strict_model```.
+There are 2 folders: ```Python_ver``` and ```iPython_ver```.
 
 ### Directory info & details
 ```
 Relational_Networks
   ├ README.md
-  ├ clevr_model (Run with command line)
+  ├ Python_ver (Run with command line)
   │  ├ main.py (Load dataset, train, and test)
   │  ├ gen_dataset.py (generate Sort-of-CLEVR dataset)
   │  ├ model.py (Classes of CNN, RN, CNN_MLP, definitions of train and test)
@@ -41,22 +41,12 @@ Relational_Networks
   │  └ model
   │     ├ epoch_20_saved.pth (where learned models are saved)
   │     └ ...
-  └ strict_model (Run with Jupyter notebook)
+  └ iPython_ver (Run with Jupyter notebook)
      └ (Same structure as above)
 ```
 
-
-### Difference between files of ```clevr_model``` and ```strict_model```
-
-|   | clevr_model | strict_model |
-|:-------------:|:----------------------|:---------------------- |
-| RN | Implemented the CLEVR model configuration at p.6 with minor changes | Strictly implemented the original paper at p.12 (number of layers, parameters, etc.) |
-| comment out | English | Japanese (Mostly) |
-|   | little comments | detailed comments |
-| supplementary  | ○ | × |
-
-※ Python version with CLEVR model takes much less computation time.  
-※ Supplementary is explanation of the codes.
+※ The reference code[1] (Sort-of-CLEVR dataset with CLEVR model) takes much less computation time.  
+※ Comment outs are mostly Japanese, but large part of my code is based on reference[1].
 
 
 ## Usage

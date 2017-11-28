@@ -1,24 +1,19 @@
-"""""""""
+"""
 Pytorch implementation of "A simple neural network module for relational reasoning
-Code is based on pytorch/examples/mnist (https://github.com/pytorch/examples/tree/master/mnist)
-"""""""""
-from __future__ import print_function
+"""
 import argparse
 import os
-#import cPickle as pickle
 import pickle
 import random
 import numpy as np
-
 import torch
 from torch.autograd import Variable
 
 from model import RN, CNN_MLP
 
-
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch Relational-Network sort-of-CLVR Example')
-parser.add_argument('--model', type=str, choices=['RN', 'CNN_MLP'], default='RN', 
+parser.add_argument('--model', type=str, choices=['RN', 'CNN_MLP'], default='RN',
                     help='resume from model stored')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                     help='input batch size for training (default: 64)')
@@ -42,16 +37,16 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-if args.model=='CNN_MLP': 
-  model = CNN_MLP(args)
+if args.model == 'CNN_MLP':
+    model = CNN_MLP(args)
 else:
-  model = RN(args)
-  
+    model = RN(args)
+
 model_dirs = './model'
 bs = args.batch_size
-input_img = torch.FloatTensor(bs, 3, 75, 75)
-input_qst = torch.FloatTensor(bs, 11)
-label = torch.LongTensor(bs)
+input_img = torch.FloatTensor(bs, 3, 75, 75) #画像の大きさをテンソル化
+input_qst = torch.FloatTensor(bs, 11) #input_qstのベクトルをテンソル化
+label = torch.LongTensor(bs) #長さ64のテンソル，ダミーのテストラベル
 
 if args.cuda:
     model.cuda()
@@ -64,6 +59,10 @@ input_qst = Variable(input_qst)
 label = Variable(label)
 
 def tensor_data(data, i):
+    """
+    1. 指定したバッチごとに対してimg, qst, ansからなるデータをテンソル化
+    2. L.57-59の変数を各データが使える形に変形して値を代入（コピー？）
+    """
     img = torch.from_numpy(np.asarray(data[0][bs*i:bs*(i+1)]))
     qst = torch.from_numpy(np.asarray(data[1][bs*i:bs*(i+1)]))
     ans = torch.from_numpy(np.asarray(data[2][bs*i:bs*(i+1)]))
@@ -72,69 +71,81 @@ def tensor_data(data, i):
     input_qst.data.resize_(qst.size()).copy_(qst)
     label.data.resize_(ans.size()).copy_(ans)
 
-
 def cvt_data_axis(data):
+    """
+    レコードが(img,qst,ans)となっている訓練/テストデータのリストをレコードの要素ごとに分割
+    """
     img = [e[0] for e in data]
     qst = [e[1] for e in data]
     ans = [e[2] for e in data]
-    return (img,qst,ans)
+    return (img, qst, ans)
 
-    
+
 def train(epoch, rel, norel):
+    """
+    training
+    """
     model.train()
 
-    if not len(rel[0]) == len(norel[0]):
+    if len(rel[0]) != len(norel[0]):
         print('Not equal length for relation dataset and non-relation dataset.')
         return
-    
+    #データセットのシャッフル
     random.shuffle(rel)
     random.shuffle(norel)
-
+    #データセットから要素のタプルを取り出す
     rel = cvt_data_axis(rel)
     norel = cvt_data_axis(norel)
-
-    for batch_idx in range(len(rel[0]) // bs):
-        tensor_data(rel, batch_idx)
+    #バッチ学習
+    for i in range(len(rel[0]) // bs):
+        tensor_data(rel, i)
         accuracy_rel = model.train_(input_img, input_qst, label)
 
-        tensor_data(norel, batch_idx)
+        tensor_data(norel, i)
         accuracy_norel = model.train_(input_img, input_qst, label)
 
-        if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)] Relations accuracy: {:.0f}% | Non-relations accuracy: {:.0f}%'.format(epoch, batch_idx * bs * 2, len(rel[0]) * 2, \
-                                                                                                                           100. * batch_idx * bs/ len(rel[0]), accuracy_rel, accuracy_norel))
-            
+        if i % args.log_interval == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)] Relations accuracy: {:.0f}% | \
+                Non-relations accuracy: {:.0f}%'.format(epoch, i * bs * 2, \
+                len(rel[0]) * 2, 100. * i * bs/ len(rel[0]), accuracy_rel, accuracy_norel))
+
 
 def test(epoch, rel, norel):
+    """
+    test
+    """
     model.eval()
-    if not len(rel[0]) == len(norel[0]):
+    if len(rel[0]) != len(norel[0]):
         print('Not equal length for relation dataset and non-relation dataset.')
         return
-    
+
     rel = cvt_data_axis(rel)
     norel = cvt_data_axis(norel)
 
     accuracy_rels = []
     accuracy_norels = []
-    for batch_idx in range(len(rel[0]) // bs):
-        tensor_data(rel, batch_idx)
+    for i in range(len(rel[0]) // bs):
+        tensor_data(rel, i)
         accuracy_rels.append(model.test_(input_img, input_qst, label))
 
-        tensor_data(norel, batch_idx)
+        tensor_data(norel, i)
         accuracy_norels.append(model.test_(input_img, input_qst, label))
 
-    accuracy_rel = sum(accuracy_rels) / len(accuracy_rels)
+    accuracy_rel = sum(accuracy_rels) / len(accuracy_rels) #全てのバッチを調べて，その平均を出している？
     accuracy_norel = sum(accuracy_norels) / len(accuracy_norels)
     print('\n Test set: Relation accuracy: {:.0f}% | Non-relation accuracy: {:.0f}%\n'.format(
         accuracy_rel, accuracy_norel))
 
-    
+
 def load_data():
+    """
+    load data from the pickle file
+    """
     print('loading data...')
     dirs = './data'
-    filename = os.path.join(dirs,'sort-of-clevr.pickle')
+    filename = os.path.join(dirs, 'sort-of-clevr.pickle')
     with open(filename, 'rb') as f:
-      train_datasets, test_datasets = pickle.load(f)
+        train_datasets, test_datasets = pickle.load(f)
     rel_train = []
     rel_test = []
     norel_train = []
@@ -142,24 +153,23 @@ def load_data():
     print('processing data...')
 
     for img, relations, norelations in train_datasets:
-        img = np.swapaxes(img,0,2)
-        for qst,ans in zip(relations[0], relations[1]):
-            rel_train.append((img,qst,ans))
-        for qst,ans in zip(norelations[0], norelations[1]):
-            norel_train.append((img,qst,ans))
+        img = np.swapaxes(img, 0, 2) #channel(RGB)方向の次元を3にするため．gen_SoC.pyのimgの生成法と関連
+        for qst, ans in zip(relations[0], relations[1]):
+            rel_train.append((img, qst, ans))
+        for qst, ans in zip(norelations[0], norelations[1]):
+            norel_train.append((img, qst, ans))
 
     for img, relations, norelations in test_datasets:
-        img = np.swapaxes(img,0,2)
-        for qst,ans in zip(relations[0], relations[1]):
-            rel_test.append((img,qst,ans))
-        for qst,ans in zip(norelations[0], norelations[1]):
-            norel_test.append((img,qst,ans))
-    
+        img = np.swapaxes(img, 0, 2)
+        for qst, ans in zip(relations[0], relations[1]):
+            rel_test.append((img, qst, ans))
+        for qst, ans in zip(norelations[0], norelations[1]):
+            norel_test.append((img, qst, ans))
+
     return (rel_train, rel_test, norel_train, norel_test)
-    
+
 
 rel_train, rel_test, norel_train, norel_test = load_data()
-
 try:
     os.makedirs(model_dirs)
 except:
@@ -175,5 +185,6 @@ if args.resume:
 
 for epoch in range(1, args.epochs + 1):
     train(epoch, rel_train, norel_train)
+    print('')
     test(epoch, rel_test, norel_test)
     model.save_model(epoch)
